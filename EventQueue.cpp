@@ -11,9 +11,9 @@ EventQueue::EventQueue(points & P)
 }
 
 
-void EventQueue::push(point & p, point & center)
+void EventQueue::push(point & p, point & center, Node *newNode)
 {
-	queue.push(Event(p,center));
+	queue.push(Event(p,center, newNode));
 }
 
 point EventQueue::pop()
@@ -40,30 +40,46 @@ point EventQueue::pop()
 	}
 }
 
-bool EventQueue::isCircleEvent(Event &event)
+bool EventQueue::empty()
 {
-	
+	return queue.empty();
 }
 
-EventQueue::Event::Event(point &p1)
+bool EventQueue::isCircleEvent(Event &event)
+{
+	for (int i = addedPoints.size() - 1; i >= 0 ; i--)
+	{
+		//Checks if there is any input point inside the Circle. Got from circle equation.
+		if ((addedPoints[i].first - event.circleCenter.first) * (addedPoints[i].first - event.circleCenter.first) +
+			(addedPoints[i].second - event.circleCenter.second) * (addedPoints[i].second - event.circleCenter.second) <
+			(event.eventPoint.second - event.circleCenter.second) * (event.eventPoint.second - event.circleCenter.second))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+Event::Event(point &p1)
 {
 	eventPoint = p1;
 	isSite = true;
 }
 
-EventQueue::Event::Event(point &p1, point &p2)
+Event::Event(point &p1, point &p2, Node *newNode)
 {
 	eventPoint = p1;
 	circleCenter = p2;
+	node = newNode;
 	isSite = false;
 }
 
-EventQueue::Event::operator bool()
+Event::operator bool()
 {
 	return isSite;
 }
 
-point& EventQueue::Event::operator*()
+point& Event::operator*()
 {
 	return eventPoint;
 }

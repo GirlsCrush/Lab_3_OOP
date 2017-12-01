@@ -1,24 +1,27 @@
 #pragma once
-#include "DCEL.h"
 
-struct Node
-{
-	Node(point &, Node *);
-	double x;
-	point p;
-	Node *Left = nullptr;
-	Node *Right = nullptr;
-	Node *Parent = nullptr;
-	bool isLeaf = true;
-};
+#include "EventQueue.h"
+
+using namespace std;
 
 class BST
 {
 public:
-	BST();
-	~BST();
-	void addLeaf(point &);
-	Node Root;
+	void drawDiagram();
+	BST(points &);
+private:
+	Node *root = nullptr;
+	DCEL diagram;
+	EventQueue events;
+	points beachLine;
+
+	void addCircleEvent(point, Node*, point);
+	Node *findArc(double &, Node *);
+	points findNieghbors(Node *);
+	void update(Node*, double &);
 	
+	void update(double &);
+	void addSite(Event &);
+	void handleCircleEvent(Event &);
 };
 

@@ -2,19 +2,6 @@
 
 
 
-DCEL::DCEL()
-{
-}
-
-
-DCEL::~DCEL()
-{
-}
-
-void DCEL::update(double y)
-{
-}
-
 Edge* DCEL::push_Edge(point &p1, point &p2)
 {
 	unc_edges.push_back(Edge(p1, p2));
@@ -23,30 +10,29 @@ Edge* DCEL::push_Edge(point &p1, point &p2)
 
 void DCEL::pop_uncEdge(point &p1, point &p2)
 {
-	set<point> temp = { p1, p2 };
-	for (int i = 0; i < unc_edges.size(); i++)
+	int edgeIndex = find_uncEdge(p1, p2);
+	unc_edges[edgeIndex].endsAmnt++;
+	if (unc_edges[edgeIndex].endsAmnt == 2)
 	{
-		if (unc_edges[i].parents == temp) 
-		{
-			edges.push_back(unc_edges[i]);
-			unc_edges.erase(unc_edges.begin() + i);
-		}
+		edges.push_back(unc_edges[edgeIndex]);
+		unc_edges.erase(unc_edges.begin() + edgeIndex);
 	}
 }
 
-Edge *DCEL::find_uncEdge(point &p1, point &p2)
+int DCEL::find_uncEdge(point &p1, point &p2)
 {
-	set<point> temp = { p1, p2 };
+	set<point> temp1 = { p1, p2 };
+	set<point> temp2 = { p2, p1 };
 	for (int i = 0; i < unc_edges.size(); i++)
 	{
-		if (unc_edges[i].parents == temp) return &unc_edges[i];
+		if (unc_edges[i].parents == temp1 || unc_edges[i].parents == temp2) return i;
 	}
 }
-
-Edge::Edge(const Edge &edge) 
-{
-	parents = edge.parents;
-}
+//
+//Edge::Edge(const Edge &edge) 
+//{
+//	parents = edge.parents;
+//}
 
 Edge::Edge(point &p1, point &p2)
 {
