@@ -1,48 +1,88 @@
 #include "EventQueue.h"
 using namespace std;
 
+Node::Node(point &site, Node *parent, vector<Edge> *cont)
+{
+	pLeft = site;
+	Parent = parent;
+	x = site.first;
+	container = cont;
+}
+
+Node::Node(point &site, Node *parent, vector<Edge> *cont, unsigned int & newEdge)
+{
+	pLeft = site;
+	Parent = parent;
+	x = site.first;
+	container = cont;
+	edge = newEdge;
+}
+Node::operator bool()
+{
+	return Left == Right && Right == nullptr;
+}
+
+Node * Node::opposite()
+{
+	if ((*this).Parent == nullptr) return nullptr;
+	if (this == (*(*this).Parent).Left) return (*(*this).Parent).Right;
+	else return (*(*this).Parent).Left;
+}
+
+Edge & Node::getEdge()
+{
+	return (*container)[edge];
+}
+
 EventQueue::EventQueue(points & P)
 {
 	for (auto elem : P)
 	{
-		queue.push(elem);
+		queue.emplace(elem);
 	}
 	
 }
 
 
-void EventQueue::push(point & p, point & center, Node *newNode)
+void EventQueue::push(point & p, point & center, Node *lowerNode, Node *disNode, Node *upperNode)
 {
-	queue.push(Event(p,center, newNode));
+	queue.push(Event(p, center, lowerNode, disNode, upperNode));
 }
 
-point EventQueue::pop()
+Event EventQueue::pop()
 {
 	Event tmp = queue.top();
 	if (tmp)
 	{
 		addedPoints.push_back(queue.top().eventPoint);
 		queue.pop();
-		return *tmp;
 	}
 	else
 	{
-		if (isCircleEvent(tmp))
-		{
-			queue.pop();
-			return *tmp;
-		}
-		else
-		{
-			queue.pop();
-			return EventQueue::pop();
-		}
+		if(isCircleEvent(tmp)) queue.pop();
+		else 
+			if (queue.empty())
+			{
+				tmp.circleCenter = tmp.eventPoint;
+				return tmp;
+			}
 	}
+	return tmp;
 }
 
 bool EventQueue::empty()
 {
 	return queue.empty();
+}
+
+points EventQueue::getAddedPoints()
+{
+	return addedPoints;
+}
+
+void EventQueue::init(points & p)
+{
+	for (int i = 0; i < p.size(); i++) queue.emplace(p[i]);
 }
 
 bool EventQueue::isCircleEvent(Event &event)
@@ -66,11 +106,13 @@ Event::Event(point &p1)
 	isSite = true;
 }
 
-Event::Event(point &p1, point &p2, Node *newNode)
+Event::Event(point & p, point & center, Node *_lowerNode, Node *_disNode, Node *_upperNode)
 {
-	eventPoint = p1;
-	circleCenter = p2;
-	node = newNode;
+	eventPoint = p;
+	circleCenter = center;
+	lowerNode = _lowerNode;
+	disNode = _disNode;
+	upperNode = _upperNode;
 	isSite = false;
 }
 

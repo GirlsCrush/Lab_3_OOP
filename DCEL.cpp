@@ -2,42 +2,87 @@
 
 
 
-Edge* DCEL::push_Edge(point &p1, point &p2)
+vector<Edge> DCEL::getEdges() const
 {
-	unc_edges.push_back(Edge(p1, p2));
-	return &(unc_edges.back());
+	return edges;
 }
 
-void DCEL::pop_uncEdge(point &p1, point &p2)
+unsigned int DCEL::push_Edge(point &p1, point &p2)
 {
-	int edgeIndex = find_uncEdge(p1, p2);
-	unc_edges[edgeIndex].endsAmnt++;
-	if (unc_edges[edgeIndex].endsAmnt == 2)
-	{
-		edges.push_back(unc_edges[edgeIndex]);
-		unc_edges.erase(unc_edges.begin() + edgeIndex);
-	}
+	int indexP1 = find_Edge(p1, true);
+	int indexP2 = find_Edge(p2, true);
+	if (indexP1 != size()) return indexP1;
+	if (indexP2 != size()) return indexP2;
+	edges.push_back(Edge(p1, p2));
+	return edges.size() - 1;
 }
 
-int DCEL::find_uncEdge(point &p1, point &p2)
+void DCEL::pop_Edge(unsigned int &i)
 {
-	set<point> temp1 = { p1, p2 };
-	set<point> temp2 = { p2, p1 };
-	for (int i = 0; i < unc_edges.size(); i++)
-	{
-		if (unc_edges[i].parents == temp1 || unc_edges[i].parents == temp2) return i;
-	}
+	edges[i].endsAmnt++;
 }
-//
-//Edge::Edge(const Edge &edge) 
-//{
-//	parents = edge.parents;
-//}
+
+Edge& DCEL::find_Edge(unsigned int &i)
+{
+	return edges[i];
+}
+
+int DCEL::find_Edge(point &p1, bool isFirst)
+{
+	int i = 0;
+	if (isFirst)
+	{
+		for (i = 0; i < edges.size(); i++)
+		{
+			if (edges[i].parents.first == p1) return i;
+		}
+	}
+	else
+	{
+		for (i = 0; i < edges.size(); i++)
+		{
+			if (edges[i].parents.second == p1) return i;
+		}
+	}
+	return i;
+}
+
+Edge & DCEL::operator[](unsigned int &i)
+{
+	return edges[i];
+}
+
+vector<Edge>* DCEL::operator*()
+{
+	return &edges;
+}
+
+unsigned int DCEL::size()
+{
+	return edges.size();
+}
+
+
+Edge::Edge(const Edge &edge)
+{
+	start = edge.start;
+	end = edge.end;
+	parents = edge.parents;
+	endsAmnt = edge.endsAmnt;
+}
 
 Edge::Edge(point &p1, point &p2)
 {
-	start.reset(new middle(p1, p2));
-	parents.insert(p1);
-	parents.insert(p2);
+	parents.first = p1;
+	parents.second = p2;
+}
+
+Edge & Edge::operator=(const Edge &edge)
+{
+	start = edge.start;
+	end = edge.end;
+	parents = edge.parents;
+	endsAmnt = edge.endsAmnt;
+	return *this;
 }
 
