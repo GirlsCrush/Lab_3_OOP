@@ -3,6 +3,7 @@
 #define BOTTOM_INDENT 1.
 #define SIDE_INTERVAL 20.
 #define NULL_NEIGHBOR nullptr
+#define EPSILON 0.000001
 #define dist(p1, p2) sqrt((p1.first - p2.first) * (p1.first - p2.first) + (p1.second - p2.second) * (p1.second - p2.second))
 
 void BST::addSite(Event &siteEvent)
@@ -72,44 +73,92 @@ void BST::addSite(Event &siteEvent)
 
 void BST::handleCircleEvent(Event &circleEvent)
 {
-	//system("pause");
+	//Node *dis = findDisappearArc(circleEvent.circleCenter.first, (*circleEvent.disNode).pLeft);
 	Node *dis = circleEvent.disNode;
 	Node *tmp = findLeftNeighbor(dis);
 	Node *up;
 	Node *low;
-	if (tmp == NULL_NEIGHBOR) cout << "NULL";
+	bool upIsLeft;
+	//if (tmp == NULL_NEIGHBOR) cout << "NULL";
 	if ((*tmp).pLeft == (*circleEvent.upperNode).pLeft)
 	{
 		up = tmp;
+		//if (findRightNeighbor(dis) == NULL_NEIGHBOR) cout << "NULL RIGHT";
 		low = findRightNeighbor(dis);
+		upIsLeft = true;
 	}
 	else
 	{
+		//if (findRightNeighbor(dis) == NULL_NEIGHBOR) cout << "NULL RIGHT";
 		up = findRightNeighbor(dis);
 		low = tmp;
+		upIsLeft = false;
 	}
 	Node *opposite = (*dis).opposite();
-	unsigned int newEdge = diagram.push_Edge((*up).pLeft, (*low).pLeft);
-	diagram[newEdge].start = point((*(*up).Parent).x, (1 / (2 * ((*up).pLeft.second - circleEvent.eventPoint.second))) * ((*(*up).Parent).x - ((*up).pLeft.first)) * ((*(*up).Parent).x - ((*up).pLeft.first)) + ((*up).pLeft.second + circleEvent.eventPoint.second) / 2);
-	diagram[newEdge].end = diagram[newEdge].start;
-	
+
 		if ((*(*(*dis).Parent).Parent).Left == (*dis).Parent) (*(*(*dis).Parent).Parent).Left = opposite;
 	else (*(*(*dis).Parent).Parent).Right = opposite;
+	tmp = up;
+	if (upIsLeft)
+	{
+		while ((*tmp).Parent != nullptr)
+		{
+			tmp = (*tmp).Parent;
+			if ((*tmp).pLeft == (*up).pLeft && (*tmp).pRight == (*dis).pLeft)
+			{
+				(*tmp).pRight = (*low).pLeft;
+				break;
+			}
 
+		}
+	}
+	else
+	{
+		while ((*tmp).Parent != nullptr)
+		{
+			tmp = (*tmp).Parent;
+			if ((*tmp).pLeft == (*dis).pLeft && (*tmp).pRight == (*up).pLeft)
+			{
+				(*tmp).pLeft = (*low).pLeft;
+				break;
+			}
+
+		}
+	}
+
+	unsigned int newEdge = diagram.push_Edge((*up).pLeft, (*low).pLeft);
+	diagram[newEdge].start = point((*tmp).x, (1 / (2 * ((*up).pLeft.second - circleEvent.eventPoint.second))) * ((*tmp).x - ((*up).pLeft.first)) * ((*tmp).x - ((*up).pLeft.first)) + ((*up).pLeft.second + circleEvent.eventPoint.second) / 2);
+	diagram[newEdge].end = diagram[newEdge].start;
+	(*tmp).edge = newEdge;
 	(*opposite).Parent = (*(*dis).Parent).Parent;
-	if((*(*up).Parent).Left == up) (*(*up).Parent).pRight = (*low).pLeft;
-	else (*(*up).Parent).pLeft = (*low).pLeft;
-	(*(*up).Parent).edge = newEdge;
+	/*if((*(*up).Parent).Left == up) (*(*up).Parent).pRight = (*low).pLeft;
+	else
+	{
+		(*(*up).Parent).pLeft = (*low).pLeft;
+	}
+	(*(*up).Parent).edge = newEdge;*/
 	delete (*dis).Parent;
 	delete dis;
-	vector<Node*> neighbors = findNieghbors(up);
-	if (neighbors[0] != NULL_NEIGHBOR && neighbors[1] != NULL_NEIGHBOR)
+
+	/*vector<Node*> neighbors = findNieghbors(up);
+	Node *neigh = NULL_NEIGHBOR;
+	if (neighbors[0] != NULL_NEIGHBOR && neighbors[0] == low) neighbors[0] = NULL_NEIGHBOR;
+	if (neighbors[1] != NULL_NEIGHBOR && neighbors[1] == low) neighbors[0] = NULL_NEIGHBOR;
+	for (int i = 0; i < 2; i++)
 	{
-		if (neighbors[0] == low) neighbors[0] = NULL_NEIGHBOR;
-		if (neighbors[1] == low) neighbors[1] = NULL_NEIGHBOR;
+		if (neighbors[i] != NULL_NEIGHBOR)
+		{
+			neigh = neighbors[i];
+			break;
+		}
 	}
-	if (neighbors[0] != NULL_NEIGHBOR) addCircleEvent(low, up, neighbors[0]);
-	if (neighbors[1] != NULL_NEIGHBOR) addCircleEvent(low, up, neighbors[1]);
+	if (neigh != NULL_NEIGHBOR)
+	{
+		point neighbor = (*neigh).pLeft;
+		double a1 = ((*low).pLeft.second - (*up).pLeft.second) / ((*low).pLeft.first - (*up).pLeft.first);
+		if (neighbor.second > a1 * (neighbor.first - (*up).pLeft.first) + (*up).pLeft.second) neigh = NULL_NEIGHBOR;
+		if (neigh != NULL_NEIGHBOR) addCircleEvent(low, up, neigh);
+	}*/
 }
 
 BST::BST(points &input): events(input)
@@ -199,7 +248,7 @@ Node * BST::findLeftNeighbor(Node *node)
 		if ((*tmp).Parent == nullptr) return NULL_NEIGHBOR;
 	}
 	tmp = (*(*tmp).Parent).Left;
-	while (!tmp)
+	while (!(*tmp))
 	{
 		tmp = (*tmp).Right;
 	}
@@ -223,7 +272,7 @@ Node * BST::findRightNeighbor(Node *node)
 		if ((*tmp).Parent == nullptr) return NULL_NEIGHBOR;
 	}
 	tmp = (*(*tmp).Parent).Right;
-	while (!tmp)
+	while (!(*tmp))
 	{
 		tmp = (*tmp).Left;
 	}
@@ -235,6 +284,41 @@ Node * BST::findRightNeighbor(double &siteX, Node * node)
 	if ((*node)) return node;
 	if (siteX >= (*node).x) return findRightNeighbor(siteX, (*node).Right);
 	return findRightNeighbor(siteX, (*node).Left);
+}
+
+Node * BST::findDisappearArc(double &x, point &dis)
+{
+	vector<Node*> acc;
+	vector<Node*> tmp;
+	findDisappearArc(x, root, acc);
+	for (int i = 0; i < acc.size(); i++)
+	{
+		if ((*acc[i]).pLeft == dis) tmp.push_back(acc[i]);
+	}
+	return acc[0];
+}
+
+void BST::findDisappearArc(double &x, Node *tmp, vector<Node*> &acc)
+{
+	if ((*tmp)) return;
+	if (abs((*tmp).x - x) < EPSILON)
+	{
+		Node *tmp1 = tmp;
+		while (!(*tmp1))
+		{
+			tmp1 = (*tmp1).Left;
+		}
+		acc.push_back(tmp1);
+		tmp1 = tmp;
+		while (!(*tmp1))
+		{
+			tmp1 = (*tmp1).Right;
+		}
+		acc.push_back(tmp1);
+	}
+	findDisappearArc(x, (*tmp).Left, acc);
+	findDisappearArc(x, (*tmp).Right, acc);
+
 }
 
 vector<Node*> BST::findNieghbors(Node * center)

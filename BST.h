@@ -34,7 +34,10 @@ private:
 	Node *findLeftNeighbor(double &, Node *);
 	Node *findRightNeighbor(Node *);
 	Node *findRightNeighbor(double &, Node *);
+	
 	vector<Node*> findNieghbors(Node *);
+	Node *findDisappearArc(double &, point &);
+	void findDisappearArc(double &, Node *, vector<Node*> &);
 	void update(Node*, double &);
 	void update(double);
 	void addSite(Event &);
