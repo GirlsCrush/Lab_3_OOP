@@ -8,7 +8,7 @@
 #endif
 #define POINT_SIZE 0.1
 #define PARABOLA_SIZE 0.025
-#define POINTS_NUMBER 3
+#define POINTS_NUMBER 7
 using namespace std;
 
 void drawVor();

@@ -9,10 +9,10 @@ vector<Edge> DCEL::getEdges() const
 
 unsigned int DCEL::push_Edge(point &p1, point &p2)
 {
-	int indexP1 = find_Edge(p1, true);
+	/*int indexP1 = find_Edge(p1, true);
 	int indexP2 = find_Edge(p2, true);
 	if (indexP1 != size()) return indexP1;
-	if (indexP2 != size()) return indexP2;
+	if (indexP2 != size()) return indexP2;*/
 	edges.push_back(Edge(p1, p2));
 	return edges.size() - 1;
 }

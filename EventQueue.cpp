@@ -1,5 +1,6 @@
 #include "EventQueue.h"
 using namespace std;
+#define PRECISION 0.00000001
 
 Node::Node(point &site, Node *parent, vector<Edge> *cont)
 {
@@ -59,13 +60,17 @@ Event EventQueue::pop()
 	}
 	else
 	{
-		if(isCircleEvent(tmp)) queue.pop();
-		else 
+		if (!isCircleEvent(tmp))
+		{
+			queue.pop();
 			if (queue.empty())
 			{
 				tmp.circleCenter = tmp.eventPoint;
 				return tmp;
 			}
+			return EventQueue::pop();
+		}
+		else queue.pop();
 	}
 	return tmp;
 }
@@ -90,9 +95,9 @@ bool EventQueue::isCircleEvent(Event &event)
 	for (int i = addedPoints.size() - 1; i >= 0 ; i--)
 	{
 		//Checks if there is any input point inside the Circle. Got from circle equation.
-		if ((addedPoints[i].first - event.circleCenter.first) * (addedPoints[i].first - event.circleCenter.first) +
-			(addedPoints[i].second - event.circleCenter.second) * (addedPoints[i].second - event.circleCenter.second) <
-			(event.eventPoint.second - event.circleCenter.second) * (event.eventPoint.second - event.circleCenter.second))
+		if (((event.eventPoint.second - event.circleCenter.second) * (event.eventPoint.second - event.circleCenter.second) - 
+			(addedPoints[i].first - event.circleCenter.first) * (addedPoints[i].first - event.circleCenter.first) -
+			(addedPoints[i].second - event.circleCenter.second) * (addedPoints[i].second - event.circleCenter.second)) > PRECISION)
 		{
 			return false;
 		}
